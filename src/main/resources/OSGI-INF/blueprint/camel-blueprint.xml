@@ -24,7 +24,7 @@
     <bean class="org.restcomm.connect.smpp.processors.MockResponse" id="mockResponse"/>
     <camelContext id="SmppService-context"
         xmlns="http://camel.apache.org/schema/blueprint" xmlns:order="http://com.mycompany/examples/order">
-        <!-- a route to generate a random order every 5th second -->
+       
         <route id="jms-sms-route" streamCache="true">
             <from id="listenToIncomingSmsMessages" uri="activemq:queue:sendSmsMessages"/>
             <loadBalance id="smscLoadBalancer">

@@ -23,9 +23,9 @@
     </bean>
     <bean class="org.restcomm.connect.smpp.processors.MockResponse" id="mockResponse"/>
     <camelContext id="SmppService-context"
-        xmlns="http://camel.apache.org/schema/blueprint" xmlns:order="http://com.mycompany/examples/order">
+        xmlns="http://camel.apache.org/schema/blueprint">
        
-        <route id="jms-sms-route" streamCache="true">
+        <route id="jms-sms-route">
             <from id="listenToIncomingSmsMessages" uri="activemq:queue:sendSmsMessages"/>
             <loadBalance id="smscLoadBalancer">
                 <!--  The weighted load balancing policy allows you to specify a processing load distribution ratio for each server with respect to the others.  -->

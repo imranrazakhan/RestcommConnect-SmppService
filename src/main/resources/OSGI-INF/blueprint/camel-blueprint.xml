@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+   This is the OSGi Blueprint XML file defining the Camel context and routes.  
+
+   Because the file is in the OSGI-INF/blueprint directory inside our JAR, it 
+   will be automatically activated as soon as the bundle is installed.
+
+   The root element for any OSGi Blueprint file is 'blueprint' - you also see 
+   the namespace definitions for both the Blueprint and the Camel namespaces.
+-->
+<blueprint xmlns="http://www.osgi.org/xmlns/blueprint/v1.0.0"
+    xmlns:cm="http://aries.apache.org/blueprint/xmlns/blueprint-cm/v1.0.0"
+    xmlns:ext="http://aries.apache.org/blueprint/xmlns/blueprint-ext/v1.0.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="         http://www.osgi.org/xmlns/blueprint/v1.0.0          https://www.osgi.org/xmlns/blueprint/v1.0.0/blueprint.xsd">
+    <!-- 
+         Lets connect the Camel ActiveMQ component to the broker.
+    -->
+    <bean class="org.apache.activemq.camel.component.ActiveMQComponent" id="activemq">
+        <property name="brokerURL" value="tcp://localhost:61616"/>
+        <property name="userName" value="admin"/>
+        <property name="password" value="admin"/>
+        <property name="usePooledConnection" value="false"/>
+    </bean>
+    <bean class="org.restcomm.connect.smpp.processors.MockResponse" id="mockResponse"/>
+    <camelContext id="SmppService-context"
+        xmlns="http://camel.apache.org/schema/blueprint" xmlns:order="http://com.mycompany/examples/order">
+        <!-- a route to generate a random order every 5th second -->
+        <route id="jms-sms-route" streamCache="true">
+            <from id="listenToIncomingSmsMessages" uri="activemq:queue:sendSmsMessages"/>
+            <loadBalance id="smscLoadBalancer">
+                <!--  The weighted load balancing policy allows you to specify a processing load distribution ratio for each server with respect to the others.  -->
+                <weighted distributionRatio="4:2"
+                    distributionRatioDelimiter=":" id="_weighted1" roundRobin="true"/>
+                <to id="smpp1" uri="smpp://smppclient1@localhost:2775?password=password&amp;systemType=producer"/>
+                <to id="smpp2" uri="smpp://smppclient1@localhost:2775?password=password&amp;systemType=producer"/>
+            </loadBalance>
+            <process id="mockResponseId" ref="mockResponse"/>
+            <log id="logEndProcessing" message="Done SMS processing."/>
+        </route>
+    </camelContext>
+</blueprint>
